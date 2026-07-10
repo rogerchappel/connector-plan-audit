@@ -1,0 +1,24 @@
+{
+  "name": "connector-plan-audit",
+  "version": "0.1.0",
+  "description": "Audit connector action plans for dry-run coverage, approvals, credentials, rollback, and evidence.",
+  "type": "module",
+  "bin": {
+    "connector-plan-audit": "./bin/cli.js"
+  },
+  "scripts": {
+    "test": "node --test",
+    "check": "node scripts/check.js",
+    "smoke": "node bin/cli.js fixtures/connector-plan.md",
+    "smoke:json": "node bin/cli.js fixtures/connector-plan.md --json"
+  },
+  "keywords": [
+    "agent-skill",
+    "connector",
+    "dry-run",
+    "approval",
+    "audit"
+  ],
+  "author": "Roger Chappell",
+  "license": "MIT"
+}
