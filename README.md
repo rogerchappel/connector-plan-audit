@@ -13,6 +13,18 @@ npm run smoke
 node bin/cli.js fixtures/connector-plan.md --json
 ```
 
+## Verification
+
+Run the same checks used for release-readiness before publishing or opening a release PR:
+
+```bash
+npm run check
+npm test
+npm run smoke
+npm run release:check
+npm pack --dry-run
+```
+
 ## Examples
 
 Audit a local markdown file:
