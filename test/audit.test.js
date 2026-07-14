@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { auditText, formatMarkdown } from "../src/index.js";
 import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 
 test("passing fixture clears the release threshold", () => {
   const text = readFileSync(new URL("../fixtures/connector-plan.md", import.meta.url), "utf8");
@@ -36,4 +37,9 @@ test("markdown formatter includes score and findings", () => {
   const report = formatMarkdown(auditText("example approval verification input side effect use when"));
   assert.match(report, /Score:/);
   assert.match(report, /Findings/);
+});
+
+test("cli prints package version", () => {
+  const output = execFileSync(process.execPath, ["bin/cli.js", "--version"], { encoding: "utf8" });
+  assert.match(output, /^0\.1\.0\n$/);
 });
