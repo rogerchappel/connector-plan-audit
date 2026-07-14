@@ -45,6 +45,8 @@ node bin/cli.js fixtures/connector-plan.md --json
 
 The CLI returns `pass` when the document clears the default threshold and `needs-work` when required release-readiness evidence is missing. Human-readable output is markdown; `--json` returns stable fields for automation.
 
+Release plans should also name an idempotency, dedupe, or retry guard so a repeated agent run cannot double-send the same connector action. The JSON output exposes this as the `idempotency` finding for stricter CI thresholds.
+
 ## Safety
 
 This project reads local markdown and writes only to stdout/stderr. It has no telemetry, no hidden network calls, and no external account actions.
