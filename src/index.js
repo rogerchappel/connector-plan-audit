@@ -73,6 +73,17 @@ export const rules = [
       "log",
       "record"
     ]
+  ],
+  [
+    "idempotency",
+    "Describe idempotency or duplicate-send controls",
+    [
+      "idempotency",
+      "idempotent",
+      "duplicate",
+      "dedupe",
+      "retry"
+    ]
   ]
 ];
 
