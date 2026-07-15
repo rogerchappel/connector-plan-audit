@@ -56,3 +56,7 @@ This project reads local markdown and writes only to stdout/stderr. It has no te
 - V1 uses deterministic term checks rather than semantic LLM review.
 - It is a release gate and coaching aid, not a guarantee that a workflow is safe.
 - Rules are intentionally conservative and may need project-specific tuning.
+
+## Release notes
+
+Before tagging a release, confirm the smoke fixture still represents the intended workflow and summarize any changed output, limitations, or operator steps in the PR.
