@@ -33,6 +33,41 @@ test("idempotency controls are reported for retry-safe release plans", () => {
   assert.equal(result.findings.find((finding) => finding.id === "idempotency").passed, false);
 });
 
+test("explicitly unsafe safeguards do not pass on keyword mentions", () => {
+  const cases = [
+    ["dry-run", "There will be no dry run."],
+    ["approval", "Approval is not required."],
+    ["credentials", "Credentials are logged publicly."],
+    ["rollback", "Rollback is impossible."],
+    ["evidence", "No evidence will be recorded."],
+    ["idempotency", "Retries have no idempotency or dedupe."],
+  ];
+
+  for (const [id, statement] of cases) {
+    const finding = auditText(statement).findings.find((candidate) => candidate.id === id);
+    assert.equal(finding.passed, false, `${id} should reject: ${statement}`);
+  }
+});
+
+test("combined unsafe plan needs work and identifies failed safeguards", () => {
+  const result = auditText(`
+    Action: send funds.
+    Target: external account.
+    There will be no dry run.
+    Approval is not required.
+    Credentials are logged publicly.
+    Rollback is impossible.
+    No evidence will be recorded.
+    Retries have no idempotency or dedupe.
+  `);
+
+  assert.equal(result.status, "needs-work");
+  assert.deepEqual(
+    result.findings.filter((finding) => !finding.passed).map((finding) => finding.id),
+    ["dry-run", "approval", "credentials", "rollback", "evidence", "idempotency"],
+  );
+});
+
 test("markdown formatter includes score and findings", () => {
   const report = formatMarkdown(auditText("example approval verification input side effect use when"));
   assert.match(report, /Score:/);
