@@ -88,6 +88,14 @@ export const rules = [
 ];
 
 const unsafePatterns = {
+  action: [
+    /\b(?:no|without)\s+(?:an?\s+)?(?:intended\s+)?action\b/,
+    /\baction\b[^.!?\n]{0,40}\bnot\s+(?:defined|specified|identified|provided|named)\b/,
+  ],
+  target: [
+    /\b(?:no|without)\s+(?:an?\s+)?(?:intended\s+)?(?:target|recipient)\b/,
+    /\b(?:target|recipient)\b[^.!?\n]{0,40}\bnot\s+(?:defined|specified|identified|provided|named)\b/,
+  ],
   "dry-run": [
     /\b(?:no|without)\s+(?:a\s+)?(?:dry[- ]run|preview|simulation)\b/,
     /\b(?:dry[- ]run|preview|simulation)\b[^.!?\n]{0,40}\b(?:disabled|omitted|skipped|not\s+(?:required|available|performed))\b/,
