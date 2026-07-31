@@ -121,11 +121,29 @@ const unsafePatterns = {
   ],
 };
 
+const unsupportedSignalPatterns = [
+  /\b(?:pending|undecided|unknown)\b/,
+  /\bnot\s+(?:described|decided|documented|defined|specified|known)\b/,
+  /\b(?:will\s+be|being|only\s+being)\s+considered\b/,
+  /\b(?:may|might|could)\s+be\b/,
+  /\bpossibly\s+(?:planned|recorded|implemented|added|available|supported)\b/,
+];
+
+function hasUnsupportedMention(normalized, terms) {
+  const statements = normalized.split(/[.!?;\n]+/);
+  return statements.some(
+    (statement) =>
+      terms.some((term) => statement.includes(term)) &&
+      unsupportedSignalPatterns.some((pattern) => pattern.test(statement)),
+  );
+}
+
 export function auditText(text, options = {}) {
   const normalized = String(text || "").toLowerCase();
   const findings = rules.map(([id, message, terms]) => {
     const explicitlyUnsafe = (unsafePatterns[id] || []).some((pattern) => pattern.test(normalized));
-    const matched = !explicitlyUnsafe && terms.some((term) => normalized.includes(term));
+    const unsupported = hasUnsupportedMention(normalized, terms);
+    const matched = !explicitlyUnsafe && !unsupported && terms.some((term) => normalized.includes(term));
     return {
       id,
       message,
