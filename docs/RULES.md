@@ -20,3 +20,9 @@ negates the signal. For action and target checks, supported forms include
 `no recipient`, `without a target`, and `recipient is not defined`. These
 checks intentionally recognize direct English negation rather than attempting
 to infer intent from indirect or highly contextual prose.
+
+Likewise, a mention is not affirmative evidence when its statement says the
+signal is pending, undecided, unknown, not described, merely considered, or
+only a possibility (for example, `evidence may be recorded`). This
+deterministic boundary is statement-local: it recognizes these direct English
+qualifiers but does not attempt semantic inference across sentences.
