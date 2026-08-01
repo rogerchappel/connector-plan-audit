@@ -123,6 +123,7 @@ const unsafePatterns = {
 
 const unsupportedSignalPatterns = [
   /\b(?:pending|undecided|unknown)\b/,
+  /\b(?:is|are)\s+(?:prohibited|forbidden|denied|missing)\b/,
   /\bnot\s+(?:described|decided|documented|defined|specified|known)\b/,
   /\b(?:will\s+be|being|only\s+being)\s+considered\b/,
   /\b(?:may|might|could)\s+be\b/,
