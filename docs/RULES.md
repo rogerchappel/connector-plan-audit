@@ -24,9 +24,17 @@ the rule vocabulary, including common pairs such as `credential`/`credentials`,
 Keyword mentions do not satisfy a rule when the same statement explicitly
 negates the signal. For action and target checks, supported forms include
 `no action`, `without an action`, `action is not specified`, `no target`,
-`no recipient`, `without a target`, and `recipient is not defined`. These
-checks intentionally recognize direct English negation rather than attempting
-to infer intent from indirect or highly contextual prose.
+`no recipient`, `without a target`, `recipient is not defined`, and a target or
+recipient described as `unspecified`. The advertised action verbs also fail
+when directly negated: `do not send`, `do not create`, `do not update`, `do not
+delete`, and `do not draft`.
+
+Approval and confirmation are treated as the same readiness signal. Direct
+forms such as `approval is not required`, `confirmation is unnecessary`, `no
+explicit confirmation`, `do not approve`, and `do not confirm` fail the
+approval finding. These checks intentionally recognize this listed English
+grammar rather than attempting to infer intent from indirect or highly
+contextual prose.
 
 Likewise, a mention is not affirmative evidence when its statement says the
 signal is pending, undecided, unknown, not described, merely considered, or
