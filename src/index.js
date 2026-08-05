@@ -101,18 +101,20 @@ const unsafePatterns = {
   action: [
     /\b(?:no|without)\s+(?:an?\s+)?(?:intended\s+)?action\b/,
     /\baction\b[^.!?\n]{0,40}\bnot\s+(?:defined|specified|identified|provided|named)\b/,
+    /\bdo\s+not\s+(?:send|create|update|delete|draft)\b/,
   ],
   target: [
     /\b(?:no|without)\s+(?:an?\s+)?(?:intended\s+)?(?:target|recipient)\b/,
-    /\b(?:target|recipient)\b[^.!?\n]{0,40}\bnot\s+(?:defined|specified|identified|provided|named)\b/,
+    /\b(?:target|recipient)\b[^.!?\n]{0,40}\b(?:not\s+(?:defined|specified|identified|provided|named)|unspecified)\b/,
   ],
   "dry-run": [
     /\b(?:no|without)\s+(?:a\s+)?(?:dry[- ]run|preview|simulation)\b/,
     /\b(?:dry[- ]run|preview|simulation)\b[^.!?\n]{0,40}\b(?:disabled|omitted|skipped|not\s+(?:required|available|performed))\b/,
   ],
   approval: [
-    /\bapproval\b[^.!?\n]{0,40}\b(?:not\s+required|unnecessary|waived|bypassed|skipped)\b/,
-    /\b(?:without|no)\s+(?:explicit\s+)?approval\b/,
+    /\b(?:approval|confirmation)\b[^.!?\n]{0,40}\b(?:not\s+(?:required|needed)|unnecessary|waived|bypassed|skipped)\b/,
+    /\b(?:without|no)\s+(?:explicit\s+)?(?:approval|confirmation)\b/,
+    /\bdo\s+not\s+(?:approve|confirm|ask\s+before)\b/,
   ],
   credentials: [
     /\b(?:credentials?|tokens?|secrets?|auth)\b[^.!?\n]{0,80}\b(?:logged?|recorded?|exposed?|published?|shared?)\b[^.!?\n]{0,40}\b(?:publicly|in\s+public|plain\s*text)\b/,

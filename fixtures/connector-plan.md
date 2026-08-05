@@ -1,7 +1,7 @@
 # Slack Follow-up Draft Plan
 
 ## Action
-Draft a Slack message for U123 but do not send it.
+Draft a Slack message for U123. Sending is outside this plan's scope.
 
 ## Connector
 Slack connector, read profile and draft message only.
