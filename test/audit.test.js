@@ -148,6 +148,52 @@ test("affirmative action and target language still passes", () => {
   }
 });
 
+test("directly negated action vocabulary and unspecified targets do not pass", () => {
+  const cases = [
+    ["action", "Do not send the message."],
+    ["action", "Do not create the record."],
+    ["action", "Do not update the account."],
+    ["action", "Do not delete the draft."],
+    ["action", "Do not draft a reply."],
+    ["target", "Target is unspecified."],
+    ["target", "Recipient is unspecified."],
+  ];
+
+  for (const [id, statement] of cases) {
+    const finding = auditText(statement).findings.find((candidate) => candidate.id === id);
+    assert.equal(finding.passed, false, `${id} should reject: ${statement}`);
+  }
+});
+
+test("directly negated approval vocabulary does not pass", () => {
+  const cases = [
+    "Confirmation is not required.",
+    "Confirmation is unnecessary.",
+    "No explicit confirmation is needed.",
+    "Do not approve the write.",
+    "Do not confirm the write.",
+  ];
+
+  for (const statement of cases) {
+    const finding = auditText(statement).findings.find((candidate) => candidate.id === "approval");
+    assert.equal(finding.passed, false, `approval should reject: ${statement}`);
+  }
+});
+
+test("affirmative action, target, and approval synonyms remain supported", () => {
+  const cases = [
+    ["action", "Update the account record."],
+    ["target", "Recipient: the incident channel."],
+    ["approval", "Confirmation is required before the write."],
+    ["approval", "Ask before creating the record."],
+  ];
+
+  for (const [id, statement] of cases) {
+    const finding = auditText(statement).findings.find((candidate) => candidate.id === id);
+    assert.equal(finding.passed, true, `${id} should accept: ${statement}`);
+  }
+});
+
 test("prohibited, denied, and missing readiness signals do not count", () => {
   const cases = [
     ["action", "Action is prohibited.", "Action: create a draft message."],
@@ -211,6 +257,37 @@ test("negated action and target mentions cannot clear the default threshold", ()
     result.findings.filter((finding) => !finding.passed).map((finding) => finding.id),
     ["action", "target"],
   );
+});
+
+test("cli rejects a combined plan with direct action, target, and confirmation negation", () => {
+  const directory = mkdtempSync(join(tmpdir(), "connector-plan-audit-"));
+  const plan = join(directory, "direct-negation.md");
+  writeFileSync(plan, `
+    Action: do not send the message.
+    Target: recipient is unspecified.
+    Preview runs before execution.
+    Confirmation is not required.
+    Credentials remain inside the runner.
+    Rollback uses the correction procedure.
+    Evidence is retained in logs.
+    Retries use a dedupe key.
+  `);
+
+  try {
+    const result = spawnSync(process.execPath, ["bin/cli.js", plan, "--json"], {
+      encoding: "utf8",
+    });
+    const report = JSON.parse(result.stdout);
+    assert.equal(result.status, 2);
+    assert.equal(report.status, "needs-work");
+    assert.equal(report.score, 63);
+    assert.deepEqual(
+      report.findings.filter((finding) => !finding.passed).map((finding) => finding.id),
+      ["action", "target", "approval"],
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
 
 test("combined unsafe plan needs work and identifies failed safeguards", () => {
