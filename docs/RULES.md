@@ -14,6 +14,13 @@
 The rules are deterministic keyword checks in V1 so action-plan review is
 repeatable before a human approves any connector write.
 
+Terms are matched as complete, case-insensitive words or phrases, never as
+incidental substrings. Thus `auth` matches `auth` but not `author`, and `log`
+matches `log` but not `catalog`. Supported inflections are listed explicitly in
+the rule vocabulary, including common pairs such as `credential`/`credentials`,
+`receipt`/`receipts`, `log`/`logs`, `simulate`/`simulation`, and
+`retry`/`retries`.
+
 Keyword mentions do not satisfy a rule when the same statement explicitly
 negates the signal. For action and target checks, supported forms include
 `no action`, `without an action`, `action is not specified`, `no target`,

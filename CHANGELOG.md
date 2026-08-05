@@ -6,6 +6,9 @@
 - Make CI run the same release-readiness gate documented for maintainers.
 - Add release-readiness checks for package metadata, pack contents, and CI verification.
 - Reject pending, uncertain, and merely considered readiness-signal mentions.
+- Match readiness signals as explicit words and phrases instead of incidental substrings.
+- Reject unknown CLI flags, extra files, repeated options, and malformed help/version combinations.
+
 ## 0.1.0
 
 - Add deterministic connector plan audit rules.
