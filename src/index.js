@@ -141,6 +141,9 @@ const unsupportedSignalPatterns = [
   /\b(?:will\s+be|being|only\s+being)\s+considered\b/,
   /\b(?:may|might|could)\s+be\b/,
   /\bpossibly\s+(?:planned|recorded|implemented|added|available|supported)\b/,
+  /\b(?:(?:is|are)\s+never|will\s+never\s+be)\s+(?:performed|required|recorded)\b/,
+  /\bcannot\s+be\s+performed\b/,
+  /\b(?:is|are)\s+disabled\b/,
 ];
 
 function termPattern(term) {
