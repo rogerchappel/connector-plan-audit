@@ -41,6 +41,11 @@ signal is pending, undecided, unknown, not described, merely considered, or
 only a possibility (for example, `evidence may be recorded`). Direct negative
 states using `is` or `are` also fail the mentioned rule when the signal is
 `prohibited`, `forbidden`, `denied`, or `missing` (for example, `preview is
-forbidden` or `credentials are missing`). This deterministic boundary is
-statement-local: it recognizes these direct English qualifiers but does not
-attempt semantic inference across sentences or more varied grammar.
+forbidden` or `credentials are missing`). The rules also reject a readiness
+operation that `cannot be performed`, one that `is never performed` or `will
+never be recorded`, and a signal described as disabled (for example, `retries
+are disabled`). Affirmative counterparts such as `preview is performed`,
+`rollback can be performed`, and `evidence will be recorded` remain readiness
+evidence. This deterministic boundary is statement-local: it recognizes these
+direct English qualifiers but does not attempt semantic inference across
+sentences or more varied grammar.
