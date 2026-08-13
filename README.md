@@ -72,9 +72,11 @@ This project reads local markdown and writes only to stdout/stderr. It has no te
 - Direct negation of advertised action verbs (`do not` or `never`
   `send/create/update/delete/draft`), an `unspecified` target or recipient,
   optional or otherwise negated approval or confirmation requirements, and
-  disabled rollback, undo, correction, or recovery paths do not count. The
-  grammar is intentionally finite and does not infer indirect, contextual, or
-  cross-sentence negation.
+  disabled rollback, undo, correction, or recovery paths do not count.
+  Explicitly negating those unsafe states does count: for example, `approval
+  is not optional` and `rollback is not disabled` are affirmative readiness
+  evidence. The grammar is intentionally finite and does not infer indirect,
+  contextual, or cross-sentence negation.
 - It is a release gate and coaching aid, not a guarantee that a workflow is safe.
 - Rules are intentionally conservative and may need project-specific tuning.
 
