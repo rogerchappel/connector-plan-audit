@@ -432,9 +432,9 @@ test("unsupported qualifiers apply only to their readiness clause", () => {
 test("contrast clauses isolate unsupported qualifiers in either order", () => {
   const cases = [
     ["target", "Target is unknown but approval is required before writes.", "approval"],
-    ["approval", "Approval is required before writes, while target is unknown.", "target"],
+    ["target", "Approval is required before writes, while target is unknown.", "approval"],
     ["dry-run", "Preview is pending, whereas rollback uses correction.", "rollback"],
-    ["evidence", "Evidence is retained, although retry behavior is unknown.", "idempotency"],
+    ["idempotency", "Evidence is retained, although retry behavior is unknown.", "evidence"],
   ];
 
   for (const [unsupportedId, statement, affirmativeId] of cases) {
