@@ -157,7 +157,7 @@ function hasTerm(text, terms) {
 
 function hasUnsupportedMention(normalized, terms) {
   const clauses = normalized.split(
-    /[.!?;,\n]+|\b(?:although|but|however|whereas|while)\b/,
+    /[.!?;,\n]+|\b(?:although|and|but|however|or|whereas|while)\b/,
   );
   return clauses.some(
     (clause) =>
