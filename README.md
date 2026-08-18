@@ -67,9 +67,10 @@ This project reads local markdown and writes only to stdout/stderr. It has no te
 - V1 uses deterministic term checks rather than semantic LLM review.
 - Pending, undecided, unknown, undescribed, considered, and merely possible
   signals do not count as affirmative readiness evidence. These qualifiers are
-  scoped to clauses separated by sentence punctuation, commas, or the contrast
-  words `although`, `but`, `however`, `whereas`, and `while`; an unknown target
-  in one clause does not invalidate affirmative approval in another.
+  scoped to clauses separated by sentence punctuation, commas, the coordinating
+  conjunctions `and` and `or`, or the contrast words `although`, `but`,
+  `however`, `whereas`, and `while`; an unknown target in one clause does not
+  invalidate affirmative approval in another.
 - Signals described directly as prohibited, forbidden, denied, or missing do
   not count as affirmative readiness evidence.
 - Direct negation of advertised action verbs (`do not` or `never`
