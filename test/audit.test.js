@@ -165,6 +165,32 @@ test("directly negated action vocabulary and unspecified targets do not pass", (
   }
 });
 
+test("negated actions do not erase affirmative actions in separate clauses", () => {
+  const cases = [
+    "Create a draft. Do not send it.",
+    "Create a draft; do not send it.",
+    "Create a draft, but do not send it.",
+  ];
+
+  for (const statement of cases) {
+    const finding = auditText(statement).findings.find((candidate) => candidate.id === "action");
+    assert.equal(finding.passed, true, `action should accept: ${statement}`);
+  }
+});
+
+test("negated actions remain rejected without a separate affirmative action", () => {
+  const cases = [
+    "Do not create a draft.",
+    "Never send the message.",
+    "The intended action is not specified.",
+  ];
+
+  for (const statement of cases) {
+    const finding = auditText(statement).findings.find((candidate) => candidate.id === "action");
+    assert.equal(finding.passed, false, `action should reject: ${statement}`);
+  }
+});
+
 test("directly negated approval vocabulary does not pass", () => {
   const cases = [
     "Confirmation is not required.",
