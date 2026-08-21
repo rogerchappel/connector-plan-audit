@@ -161,31 +161,27 @@ function clauses(normalized) {
   );
 }
 
-function hasUnsupportedMention(normalized, terms) {
-  return clauses(normalized).some(
-    (clause) =>
-      hasTerm(clause, terms) &&
-      unsupportedSignalPatterns.some((pattern) => pattern.test(clause)),
-  );
-}
+function hasAffirmativeSignal(normalized, id, terms) {
+  const parts = clauses(normalized);
+  return parts.some((clause, index) => {
+    if (!hasTerm(clause, terms)) return false;
+    const isQualified = (candidate) =>
+      (unsafePatterns[id] || []).some((pattern) => pattern.test(candidate)) ||
+      unsupportedSignalPatterns.some((pattern) => pattern.test(candidate));
+    if (isQualified(clause)) return false;
 
-function hasAffirmativeAction(normalized, terms) {
-  return clauses(normalized).some(
-    (clause) =>
-      hasTerm(clause, terms) &&
-      !unsafePatterns.action.some((pattern) => pattern.test(clause)) &&
-      !unsupportedSignalPatterns.some((pattern) => pattern.test(clause)),
-  );
+    // Preserve a qualifier across `and`/`or` when it introduces a list of
+    // synonyms for this same rule (for example, "no target or recipient").
+    const previous = parts[index - 1] || "";
+    const isBareContinuation = clause.trim().split(/\s+/).length <= 2;
+    return !(isBareContinuation && hasTerm(previous, terms) && isQualified(previous));
+  });
 }
 
 export function auditText(text, options = {}) {
   const normalized = String(text || "").toLowerCase();
   const findings = rules.map(([id, message, terms]) => {
-    const explicitlyUnsafe = (unsafePatterns[id] || []).some((pattern) => pattern.test(normalized));
-    const unsupported = hasUnsupportedMention(normalized, terms);
-    const matched = id === "action"
-      ? hasAffirmativeAction(normalized, terms)
-      : !explicitlyUnsafe && !unsupported && hasTerm(normalized, terms);
+    const matched = hasAffirmativeSignal(normalized, id, terms);
     return {
       id,
       message,
