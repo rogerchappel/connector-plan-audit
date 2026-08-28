@@ -657,6 +657,63 @@ test("cli scopes unsupported qualifiers across coordinating conjunctions", () =>
   }
 });
 
+test("trailing unsafe predicates govern every coordinated readiness subject", () => {
+  const cases = [
+    ["Approval and rollback are not required.", ["approval", "rollback"]],
+    ["Dry-run and approval are disabled.", ["dry-run", "approval"]],
+    ["Tokens and secrets are shared publicly.", ["credentials"]],
+  ];
+
+  for (const [statement, rejectedIds] of cases) {
+    const result = auditText(statement);
+    for (const id of rejectedIds) {
+      assert.equal(
+        result.findings.find((finding) => finding.id === id).passed,
+        false,
+        `${id} should reject: ${statement}`,
+      );
+    }
+  }
+});
+
+test("affirmative coordinated subjects and separate action clauses remain affirmative", () => {
+  const coordinated = auditText("Approval and rollback are required before writes.");
+  assert.equal(coordinated.findings.find(({ id }) => id === "approval").passed, true);
+  assert.equal(coordinated.findings.find(({ id }) => id === "rollback").passed, true);
+
+  const separate = auditText("Create a draft, but do not send it.");
+  assert.equal(separate.findings.find(({ id }) => id === "action").passed, true);
+});
+
+test("cli rejects cross-rule coordinated subjects with trailing unsafe predicates", () => {
+  const directory = mkdtempSync(join(tmpdir(), "connector-plan-audit-"));
+  const plan = join(directory, "coordinated-unsafe.md");
+  writeFileSync(plan, `
+    Action: send the update.
+    Target: the production channel.
+    Dry-run and approval are disabled.
+    Tokens and secrets are shared publicly.
+    Rollback is not required.
+    Evidence is logged.
+    Retries use dedupe.
+  `);
+
+  try {
+    const result = spawnSync(process.execPath, ["bin/cli.js", plan, "--json"], {
+      encoding: "utf8",
+    });
+    const report = JSON.parse(result.stdout);
+    assert.equal(result.status, 2);
+    assert.equal(report.status, "needs-work");
+    assert.deepEqual(
+      report.findings.filter((finding) => !finding.passed).map((finding) => finding.id),
+      ["dry-run", "approval", "credentials", "rollback"],
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("markdown formatter includes score and findings", () => {
   const report = formatMarkdown(auditText("example approval verification input side effect use when"));
   assert.match(report, /Score:/);
