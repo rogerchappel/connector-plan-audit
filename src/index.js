@@ -122,6 +122,7 @@ const unsafePatterns = {
   ],
   rollback: [
     /\b(?:rollback|undo|correction|recovery)\b[^.!?\n]{0,40}\b(?:(?<!not\s)disabled|impossible|unavailable|unsupported|not\s+(?:possible|available|supported))\b/,
+    /\b(?:rollback|undo|correction|recovery)\b[^.!?\n]{0,40}\bnot\s+(?:required|needed)\b/,
     /\b(?:no|without)\s+(?:a\s+)?(?:rollback|undo|correction|recovery)\b/,
   ],
   evidence: [
