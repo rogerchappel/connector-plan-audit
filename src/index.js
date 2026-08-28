@@ -122,6 +122,7 @@ const unsafePatterns = {
   ],
   rollback: [
     /\b(?:rollback|undo|correction|recovery)\b[^.!?\n]{0,40}\b(?:(?<!not\s)disabled|impossible|unavailable|unsupported|not\s+(?:possible|available|supported))\b/,
+    /\b(?:rollback|undo|correction|recovery)\b[^.!?\n]{0,40}\bnot\s+(?:required|needed)\b/,
     /\b(?:no|without)\s+(?:a\s+)?(?:rollback|undo|correction|recovery)\b/,
   ],
   evidence: [
@@ -162,14 +163,20 @@ function hasTerm(text, terms) {
 }
 
 function clauses(normalized) {
-  return normalized.split(
-    /[.!?;,\n]+|\b(?:although|and|but|however|or|whereas|while)\b/,
-  );
+  const boundary = /[.!?;,\n]+|\b(?:although|and|but|however|or|whereas|while)\b/g;
+  const parts = [];
+  let start = 0;
+  for (const match of normalized.matchAll(boundary)) {
+    parts.push({ text: normalized.slice(start, match.index), separator: match[0].trim() });
+    start = match.index + match[0].length;
+  }
+  parts.push({ text: normalized.slice(start), separator: "" });
+  return parts;
 }
 
 function hasAffirmativeSignal(normalized, id, terms) {
   const parts = clauses(normalized);
-  return parts.some((clause, index) => {
+  return parts.some(({ text: clause, separator }, index) => {
     if (!hasTerm(clause, terms)) return false;
     const isQualified = (candidate) =>
       ((unsafePatterns[id] || []).some((pattern) => pattern.test(candidate)) &&
@@ -179,9 +186,22 @@ function hasAffirmativeSignal(normalized, id, terms) {
 
     // Preserve a qualifier across `and`/`or` when it introduces a list of
     // synonyms for this same rule (for example, "no target or recipient").
-    const previous = parts[index - 1] || "";
+    const previous = parts[index - 1]?.text || "";
     const isBareContinuation = clause.trim().split(/\s+/).length <= 2;
-    return !(isBareContinuation && hasTerm(previous, terms) && isQualified(previous));
+    if (isBareContinuation && hasTerm(previous, terms) && isQualified(previous)) return false;
+
+    // A trailing predicate can govern multiple coordinated readiness subjects,
+    // including subjects from different rules: "approval and rollback are not
+    // required". Only carry it back across and/or from a bare subject, leaving
+    // complete affirmative clauses such as "create a draft, but do not send it"
+    // independent.
+    const next = parts[index + 1]?.text || "";
+    const isBareSubject = clause.trim().split(/\s+/).length <= 2;
+    const coordinated = `${clause} ${separator} ${next}`;
+    if (isBareSubject && /^(?:and|or)$/.test(separator) && isQualified(coordinated)) {
+      return false;
+    }
+    return true;
   });
 }
 

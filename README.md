@@ -75,6 +75,13 @@ This project reads local markdown and writes only to stdout/stderr. It has no te
   is not required in the sandbox. Approval is required before live writes.`
   passes approval. A document containing only unsafe or unsupported clauses
   for a rule still fails it.
+- A trailing unsafe or unsupported predicate is applied to each bare readiness
+  subject joined by `and` or `or`, even when the subjects belong to different
+  rules. For example, `approval and rollback are not required` rejects both
+  signals, and `tokens and secrets are shared publicly` rejects credential
+  readiness. This finite grammar does not carry a predicate across punctuation
+  or contrast words, so `Create a draft, but do not send it.` retains the
+  affirmative `create` action from its separate clause.
 - Signals described directly as prohibited, forbidden, denied, or missing do
   not count as affirmative readiness evidence.
 - Direct negation of advertised action verbs (`do not` or `never`

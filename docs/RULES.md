@@ -58,5 +58,9 @@ more than once: `rollback is pending for sandbox, but rollback is documented
 for production` passes rollback because its second clause is affirmative.
 Every occurrence is evaluated, and a rule passes when any one of its clauses
 is affirmative; unsafe-only or unsupported-only occurrences do not pass. The
-checker does not attempt semantic inference across clauses, sentences, or more
+checker recognizes one coordinated-subject exception: a trailing predicate
+governs each bare readiness subject joined by `and` or `or`. Thus `dry-run and
+approval are disabled` fails both rules, while punctuation and contrast words
+still keep complete clauses such as `Create a draft, but do not send it.`
+independent. It does not attempt semantic inference across sentences or more
 varied grammar.
