@@ -110,10 +110,10 @@ const unsafePatterns = {
   ],
   "dry-run": [
     /\b(?:no|without)\s+(?:a\s+)?(?:dry[- ]run|preview|simulation)\b/,
-    /\b(?:dry[- ]run|preview|simulation)\b[^.!?\n]{0,40}\b(?:disabled|omitted|skipped|not\s+(?:required|available|performed))\b/,
+    /\b(?:dry[- ]run|preview|simulation)\b[^.!?\n]{0,40}\b(?:disabled|omitted|skipped|not\s+(?:required|needed|necessary|available|performed))\b/,
   ],
   approval: [
-    /\b(?:approval|confirmation)\b[^.!?\n]{0,40}\b(?:not\s+(?:required|needed)|unnecessary|(?<!not\s)optional|waived|bypassed|skipped)\b/,
+    /\b(?:approval|confirmation)\b[^.!?\n]{0,40}\b(?:not\s+(?:required|needed|necessary)|unnecessary|(?<!not\s)optional|waived|bypassed|skipped)\b/,
     /\b(?:without|no)\s+(?:explicit\s+)?(?:approval|confirmation)\b/,
     /\bdo\s+not\s+(?:approve|confirm|ask\s+before)\b/,
   ],
@@ -122,16 +122,16 @@ const unsafePatterns = {
   ],
   rollback: [
     /\b(?:rollback|undo|correction|recovery)\b[^.!?\n]{0,40}\b(?:(?<!not\s)disabled|impossible|unavailable|unsupported|not\s+(?:possible|available|supported))\b/,
-    /\b(?:rollback|undo|correction|recovery)\b[^.!?\n]{0,40}\bnot\s+(?:required|needed)\b/,
+    /\b(?:rollback|undo|correction|recovery)\b[^.!?\n]{0,40}\bnot\s+(?:required|needed|necessary)\b/,
     /\b(?:no|without)\s+(?:a\s+)?(?:rollback|undo|correction|recovery)\b/,
   ],
   evidence: [
     /\b(?:no|without)\s+(?:audit\s+)?(?:evidence|receipt|log|record)\b/,
-    /\b(?:evidence|receipts?|logs?|records?)\b[^.!?\n]{0,40}\b(?:not\s+(?:recorded|retained|kept)|discarded|omitted)\b/,
+    /\b(?:evidence|receipts?|logs?|records?)\b[^.!?\n]{0,40}\b(?:not\s+(?:required|needed|necessary|recorded|retained|kept)|discarded|omitted)\b/,
   ],
   idempotency: [
     /\b(?:no|without)\s+(?:an?\s+)?(?:idempotency|idempotent|dedupe|duplicate[- ]send)\b/,
-    /\b(?:idempotency|dedupe|duplicate[- ]send)\b[^.!?\n]{0,40}\b(?:not\s+(?:supported|implemented|required)|absent|disabled|unavailable)\b/,
+    /\b(?:idempotency|dedupe|duplicate[- ]send|retries?)\b[^.!?\n]{0,40}\b(?:not\s+(?:supported|implemented|required|needed|necessary)|absent|disabled|unavailable)\b/,
   ],
 };
 
@@ -207,8 +207,12 @@ function hasAffirmativeSignal(normalized, id, terms) {
 
 export function auditText(text, options = {}) {
   const normalized = String(text || "").toLowerCase();
+  let hasExplicitUnsafeFinding = false;
   const findings = rules.map(([id, message, terms]) => {
     const matched = hasAffirmativeSignal(normalized, id, terms);
+    if (!matched && (unsafePatterns[id] || []).some((pattern) => pattern.test(normalized))) {
+      hasExplicitUnsafeFinding = true;
+    }
     return {
       id,
       message,
@@ -223,7 +227,7 @@ export function auditText(text, options = {}) {
     score,
     passed,
     total: findings.length,
-    status: score >= (options.threshold ?? 80) ? "pass" : "needs-work",
+    status: score >= (options.threshold ?? 80) && !hasExplicitUnsafeFinding ? "pass" : "needs-work",
     findings,
   };
 }
