@@ -134,6 +134,19 @@ test("pending and uncertain safeguard mentions do not count as readiness evidenc
   }
 });
 
+test("incidental rollback mentions in examples or negated procedures do not count", () => {
+  for (const statement of [
+    "The word undo appears only in this example.",
+    "Rollback is mentioned, not as a procedure.",
+    "For example, a correction could be considered later.",
+  ]) {
+    const finding = auditText(statement).findings.find(({ id }) => id === "rollback");
+    assert.equal(finding.passed, false, statement);
+  }
+
+  assert.equal(auditText("Rollback uses the documented correction procedure.").findings.find(({ id }) => id === "rollback").passed, true);
+});
+
 test("affirmative safeguard language still passes", () => {
   const cases = [
     ["dry-run", "A dry run produces a preview before execution."],

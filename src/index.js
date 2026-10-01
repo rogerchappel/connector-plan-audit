@@ -178,6 +178,8 @@ function hasAffirmativeSignal(normalized, id, terms) {
   const parts = clauses(normalized);
   return parts.some(({ text: clause, separator }, index) => {
     if (!hasTerm(clause, terms)) return false;
+    // Example mentions do not prove that a rollback procedure exists.
+    if (id === "rollback" && /\bexample\b|\bmentioned\b|\bnot\s+as\s+(?:a\s+)?procedure\b/.test(clause)) return false;
     const isQualified = (candidate) =>
       ((unsafePatterns[id] || []).some((pattern) => pattern.test(candidate)) &&
         !(affirmativeExceptionPatterns[id] || []).some((pattern) => pattern.test(candidate))) ||
