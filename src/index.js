@@ -208,7 +208,7 @@ function hasAffirmativeSignal(normalized, id, terms) {
 }
 
 export function auditText(text, options = {}) {
-  const normalized = String(text || "").toLowerCase();
+  const normalized = String(text ?? "").toLowerCase();
   let hasExplicitUnsafeFinding = false;
   const findings = rules.map(([id, message, terms]) => {
     const matched = hasAffirmativeSignal(normalized, id, terms);

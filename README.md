@@ -51,6 +51,10 @@ substrings do not count: for example, `author` does not satisfy `auth`, and
 affirmative variants such as `credential`/`credentials`, `log`/`logs`,
 `simulate`/`simulation`, and `retry`/`retries` are recognized explicitly.
 
+The `auditText(text)` API converts its input to a string using JavaScript
+`String` coercion, with `null` and `undefined` treated as empty text. Other
+values—including `0` and `false`—are audited as their string forms.
+
 The CLI accepts exactly one plan file and, optionally, one `--json` flag in
 either order. `--help` and `--version` are standalone commands. Unknown flags,
 extra files, repeated options, and combinations of standalone commands with
