@@ -801,9 +801,10 @@ test("markdown formatter includes score and findings", () => {
   assert.match(report, /Findings/);
 });
 
-test("cli prints package version", () => {
+test("cli prints the package manifest version", () => {
+  const { version } = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
   const output = execFileSync(process.execPath, ["bin/cli.js", "--version"], { encoding: "utf8" });
-  assert.match(output, /^0\.1\.0\n$/);
+  assert.equal(output, `${version}\n`);
 });
 
 test("cli rejects unknown flags, extra files, and malformed option combinations", () => {
@@ -820,5 +821,27 @@ test("cli rejects unknown flags, extra files, and malformed option combinations"
     const result = spawnSync(process.execPath, ["bin/cli.js", ...args], { encoding: "utf8" });
     assert.equal(result.status, 1, `should reject: ${args.join(" ")}`);
     assert.match(result.stderr, /Usage: connector-plan-audit/);
+  }
+});
+
+test("CLI --json emits the complete audit result schema", () => {
+  const output = execFileSync(
+    process.execPath,
+    ["bin/cli.js", "fixtures/connector-plan.md", "--json"],
+    { encoding: "utf8" },
+  );
+  const result = JSON.parse(output);
+
+  assert.deepEqual(Object.keys(result), ["tool", "score", "passed", "total", "status", "findings"]);
+  assert.equal(result.tool, "connector-plan-audit");
+  assert.equal(result.status, "pass");
+  assert.equal(result.score, 100);
+  assert.ok(Array.isArray(result.findings));
+  for (const finding of result.findings) {
+    assert.deepEqual(Object.keys(finding), ["id", "message", "passed", "severity"]);
+    assert.equal(typeof finding.id, "string");
+    assert.equal(typeof finding.message, "string");
+    assert.equal(typeof finding.passed, "boolean");
+    assert.ok(["ok", "warn"].includes(finding.severity));
   }
 });
