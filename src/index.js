@@ -212,7 +212,11 @@ export function auditText(text, options = {}) {
   let hasExplicitUnsafeFinding = false;
   const findings = rules.map(([id, message, terms]) => {
     const matched = hasAffirmativeSignal(normalized, id, terms);
-    if (!matched && (unsafePatterns[id] || []).some((pattern) => pattern.test(normalized))) {
+    if (!matched && (unsafePatterns[id] || []).some((pattern) =>
+      clauses(normalized).some(({ text: clause }) =>
+        hasTerm(clause, terms) && pattern.test(clause),
+      ),
+    )) {
       hasExplicitUnsafeFinding = true;
     }
     return {

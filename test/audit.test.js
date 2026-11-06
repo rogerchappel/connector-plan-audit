@@ -570,6 +570,24 @@ test("affirmative readiness clauses survive same-signal unsafe and unsupported c
   }
 });
 
+test("unsafe quoted examples do not override separate affirmative readiness clauses", () => {
+  const text = `
+    Action: create a draft.
+    Target: the review channel.
+    Dry-run preview is required.
+    Approval is required before writes.
+    Credentials are never logged publicly.
+    Rollback uses the documented correction procedure.
+    Audit logs record evidence.
+    Retries use idempotency controls.
+    Example of prohibited practice: approval is not required before sending.
+  `;
+  const result = auditText(text);
+  assert.equal(result.status, "pass");
+  assert.equal(result.findings.every(({ passed }) => passed), true);
+  assert.equal(auditText("Approval is not required before sending.").status, "needs-work");
+});
+
 test("same-signal unsafe and unsupported clauses fail without affirmative evidence", () => {
   const cases = [
     ["approval", "Approval is not required in the sandbox. Approval is optional for live writes."],
