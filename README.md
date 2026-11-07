@@ -2,6 +2,12 @@
 
 Audit connector action plans for dry-run coverage, approvals, credentials, rollback, and evidence.
 
+## Node.js support
+
+This package supports Node.js 20 and the latest even-numbered LTS release. CI runs
+release-readiness checks on both supported endpoints; the minimum is specified by
+`engines.node` in `package.json`.
+
 The CLI audits markdown action plans for the safety evidence needed before connector execution.
 
 ## Quickstart
