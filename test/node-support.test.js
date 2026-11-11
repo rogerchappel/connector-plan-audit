@@ -17,4 +17,11 @@ test("Node.js engine support is documented and covered by CI endpoints", () => {
   const versions = [...matrix[1].matchAll(/(?:^|,)\s*(\d+)(?=\s*(?:,|$))/g)].map(([, value]) => Number(value));
   assert.ok(versions.includes(minimum), `CI matrix must include engine minimum ${minimum}`);
   assert.ok(versions.includes(Math.max(...versions)), "CI matrix must include its latest supported endpoint");
+
+  const latestEvenLts = Math.max(...versions.filter((version) => version % 2 === 0));
+  assert.ok(Number.isFinite(latestEvenLts), "CI matrix must include an even-numbered Node.js LTS");
+  assert.ok(
+    versions.includes(latestEvenLts),
+    `CI matrix must include the latest even-numbered LTS endpoint ${latestEvenLts}`,
+  );
 });
