@@ -33,3 +33,6 @@ jobs:
 
       - name: Run release checks
         run: npm run release:check
+
+      - name: Verify package contents and install path
+        run: npm run package:smoke
