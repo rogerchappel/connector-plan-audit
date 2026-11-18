@@ -90,6 +90,45 @@ test("affirmative safeguard language still passes", () => {
   }
 });
 
+test("explicit credential disclosure negations count as safe boundaries", () => {
+  const safeStatements = [
+    "Credentials are not logged publicly.",
+    "Tokens are never shared publicly.",
+  ];
+  const unsafeStatements = [
+    "Credentials are logged publicly.",
+    "Tokens are shared publicly.",
+  ];
+
+  for (const statement of safeStatements) {
+    const finding = auditText(statement).findings.find((candidate) => candidate.id === "credentials");
+    assert.equal(finding.passed, true, `credentials should accept: ${statement}`);
+  }
+  for (const statement of unsafeStatements) {
+    const finding = auditText(statement).findings.find((candidate) => candidate.id === "credentials");
+    assert.equal(finding.passed, false, `credentials should reject: ${statement}`);
+  }
+});
+
+test("CLI distinguishes safe credential negation from unsafe disclosure", () => {
+  const statements = [
+    ["Credentials are not logged publicly.", true],
+    ["Tokens are shared publicly.", false],
+  ];
+
+  for (const [credentialBoundary, expected] of statements) {
+    const plan = join(tmpdir(), `connector-plan-credential-${Math.random()}.md`);
+    writeFileSync(plan, credentialBoundary);
+    const result = spawnSync(process.execPath, ["bin/cli.js", plan, "--json"], {
+      cwd: new URL("..", import.meta.url),
+      encoding: "utf8",
+    });
+    const report = JSON.parse(result.stdout);
+    const finding = report.findings.find((candidate) => candidate.id === "credentials");
+    assert.equal(finding.passed, expected, credentialBoundary);
+  }
+});
+
 test("readiness terms match words and phrases rather than incidental substrings", () => {
   const result = auditText(`
     The author prepares the plan.

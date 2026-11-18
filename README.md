@@ -86,8 +86,12 @@ This project reads local markdown and writes only to stdout/stderr. It has no te
   constraint; `Do not create a draft.` does not name an affirmative action.
   Explicitly negating those unsafe states does count: for example, `approval
   is not optional` and `rollback is not disabled` are affirmative readiness
-  evidence. The grammar is intentionally finite and does not infer indirect,
-  contextual, or cross-sentence negation.
+  evidence. Credential boundaries likewise recognize a credential, token,
+  secret, or auth term followed in the same clause by `not` or `never`, a
+  disclosure verb (`logged`, `recorded`, `exposed`, `published`, or `shared`),
+  and `publicly`, `in public`, or `plain text`; for example, `tokens are never
+  shared publicly`. The grammar is intentionally finite and does not infer
+  indirect, contextual, or cross-sentence negation.
 - It is a release gate and coaching aid, not a guarantee that a workflow is safe.
 - Rules are intentionally conservative and may need project-specific tuning.
 

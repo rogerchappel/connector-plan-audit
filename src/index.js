@@ -134,6 +134,12 @@ const unsafePatterns = {
   ],
 };
 
+const affirmativeExceptionPatterns = {
+  credentials: [
+    /\b(?:credentials?|tokens?|secrets?|auth)\b[^.!?\n]{0,80}\b(?:are|is|were|was)?\s*(?:not|never)\s+(?:logged?|recorded?|exposed?|published?|shared?)\b[^.!?\n]{0,40}\b(?:publicly|in\s+public|plain\s*text)\b/,
+  ],
+};
+
 const unsupportedSignalPatterns = [
   /\b(?:pending|undecided|unknown)\b/,
   /\b(?:is|are)\s+(?:prohibited|forbidden|denied|missing)\b/,
@@ -166,7 +172,8 @@ function hasAffirmativeSignal(normalized, id, terms) {
   return parts.some((clause, index) => {
     if (!hasTerm(clause, terms)) return false;
     const isQualified = (candidate) =>
-      (unsafePatterns[id] || []).some((pattern) => pattern.test(candidate)) ||
+      ((unsafePatterns[id] || []).some((pattern) => pattern.test(candidate)) &&
+        !(affirmativeExceptionPatterns[id] || []).some((pattern) => pattern.test(candidate))) ||
       unsupportedSignalPatterns.some((pattern) => pattern.test(candidate));
     if (isQualified(clause)) return false;
 
