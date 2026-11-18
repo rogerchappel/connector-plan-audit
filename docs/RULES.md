@@ -23,6 +23,9 @@ to infer intent from indirect or highly contextual prose.
 
 Likewise, a mention is not affirmative evidence when its statement says the
 signal is pending, undecided, unknown, not described, merely considered, or
-only a possibility (for example, `evidence may be recorded`). This
-deterministic boundary is statement-local: it recognizes these direct English
-qualifiers but does not attempt semantic inference across sentences.
+only a possibility (for example, `evidence may be recorded`). Direct negative
+states using `is` or `are` also fail the mentioned rule when the signal is
+`prohibited`, `forbidden`, `denied`, or `missing` (for example, `preview is
+forbidden` or `credentials are missing`). This deterministic boundary is
+statement-local: it recognizes these direct English qualifiers but does not
+attempt semantic inference across sentences or more varied grammar.
