@@ -25,6 +25,8 @@ npm run release:check
 npm pack --dry-run
 ```
 
+The GitHub Actions CI workflow runs `npm run release:check` for every pull request and every push to `main`.
+
 ## Examples
 
 Audit a local markdown file:
@@ -52,11 +54,3 @@ This project reads local markdown and writes only to stdout/stderr. It has no te
 - V1 uses deterministic term checks rather than semantic LLM review.
 - It is a release gate and coaching aid, not a guarantee that a workflow is safe.
 - Rules are intentionally conservative and may need project-specific tuning.
-
-## Verification
-
-```sh
-npm test
-npm run check
-npm run smoke
-```
