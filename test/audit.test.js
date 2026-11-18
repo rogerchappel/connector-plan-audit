@@ -235,6 +235,23 @@ test("prohibited, denied, and missing readiness signals do not count", () => {
   }
 });
 
+test("never, cannot, and disabled readiness signals do not count", () => {
+  const cases = [
+    ["dry-run", "Preview is never performed.", "Preview is performed before execution."],
+    ["approval", "Approval is never required.", "Approval is required before writes."],
+    ["rollback", "Rollback cannot be performed.", "Rollback can be performed after a failed write."],
+    ["evidence", "Evidence will never be recorded.", "Evidence will be recorded for audit."],
+    ["idempotency", "Retries are disabled.", "Retries are enabled with a dedupe key."],
+  ];
+
+  for (const [id, negative, affirmative] of cases) {
+    const negativeFinding = auditText(negative).findings.find((finding) => finding.id === id);
+    const affirmativeFinding = auditText(affirmative).findings.find((finding) => finding.id === id);
+    assert.equal(negativeFinding.passed, false, `${id} should reject: ${negative}`);
+    assert.equal(affirmativeFinding.passed, true, `${id} should accept: ${affirmative}`);
+  }
+});
+
 test("cli rejects a plan whose eight readiness signals are negative states", () => {
   const directory = mkdtempSync(join(tmpdir(), "connector-plan-audit-"));
   const plan = join(directory, "negative-states.md");
@@ -263,6 +280,22 @@ test("cli rejects a plan whose eight readiness signals are negative states", () 
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
+});
+
+test("cli rejects never, cannot, and disabled readiness states", () => {
+  const result = spawnSync(
+    process.execPath,
+    ["bin/cli.js", "fixtures/negative-readiness-states.md", "--json"],
+    { encoding: "utf8" },
+  );
+  const report = JSON.parse(result.stdout);
+
+  assert.equal(result.status, 2);
+  assert.equal(report.status, "needs-work");
+  assert.deepEqual(
+    report.findings.filter((finding) => !finding.passed).map((finding) => finding.id),
+    ["dry-run", "approval", "rollback", "evidence", "idempotency"],
+  );
 });
 
 test("negated action and target mentions cannot clear the default threshold", () => {
