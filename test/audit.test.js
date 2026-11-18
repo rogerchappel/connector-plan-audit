@@ -52,6 +52,66 @@ test("explicitly unsafe safeguards do not pass on keyword mentions", () => {
   }
 });
 
+test("direct readiness negations fail their finding and the overall audit", () => {
+  const cases = [
+    ["approval", "Approval is not necessary before writes."],
+    ["rollback", "Rollback is not necessary."],
+    ["dry-run", "A dry run is not needed."],
+    ["evidence", "Audit logs are not required."],
+    ["idempotency", "Retries are not required."],
+  ];
+  const completePlan = "Action create. Target channel. Dry run performed. Approval required. Credentials stay private. Rollback documented. Audit logs retained. Retries use dedupe.";
+
+  for (const [id, statement] of cases) {
+    const result = auditText(`${completePlan.replace(new RegExp(`[^.]*\\b${id === "dry-run" ? "Dry run" : id === "idempotency" ? "Retries" : id === "evidence" ? "Audit logs" : id}\\b[^.]*\\.`, "i"), "")} ${statement}`);
+    assert.equal(result.findings.find((finding) => finding.id === id).passed, false, statement);
+    assert.equal(result.score, 88, statement);
+    assert.equal(result.status, "needs-work", statement);
+  }
+});
+
+test("affirmative counterparts and separate clauses remain readiness evidence", () => {
+  const cases = [
+    ["approval", "Approval is necessary before writes."],
+    ["rollback", "Rollback is necessary."],
+    ["dry-run", "A dry run is needed."],
+    ["evidence", "Audit logs are required."],
+    ["idempotency", "Retries are required and use dedupe."],
+    ["approval", "Approval is not necessary in sandbox, but approval is required for production."],
+    ["rollback", "Rollback is not necessary in sandbox; rollback is documented for production."],
+    ["dry-run", "A dry run is not needed in sandbox. A dry run is performed for production."],
+    ["evidence", "Logs are not required in sandbox, while audit logs are retained for production."],
+    ["idempotency", "Retries are not required in sandbox, but retries use dedupe in production."],
+  ];
+
+  for (const [id, statement] of cases) {
+    const finding = auditText(statement).findings.find((candidate) => candidate.id === id);
+    assert.equal(finding.passed, true, `${id} should accept: ${statement}`);
+  }
+});
+
+test("CLI reports each direct readiness negation as needs-work", () => {
+  const statements = [
+    ["approval", "Approval is not necessary before writes."],
+    ["rollback", "Rollback is not necessary."],
+    ["dry-run", "A dry run is not needed."],
+    ["evidence", "Audit logs are not required."],
+    ["idempotency", "Retries are not required."],
+  ];
+
+  for (const [id, statement] of statements) {
+    const plan = join(tmpdir(), `connector-plan-negation-${id}-${Math.random()}.md`);
+    writeFileSync(plan, statement);
+    const result = spawnSync(process.execPath, ["bin/cli.js", plan, "--json"], {
+      cwd: new URL("..", import.meta.url),
+      encoding: "utf8",
+    });
+    const report = JSON.parse(result.stdout);
+    assert.equal(report.status, "needs-work", statement);
+    assert.equal(report.findings.find((finding) => finding.id === id).passed, false, statement);
+  }
+});
+
 test("pending and uncertain safeguard mentions do not count as readiness evidence", () => {
   const cases = [
     ["dry-run", "Dry run is pending."],
