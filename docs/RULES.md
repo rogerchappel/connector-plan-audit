@@ -38,6 +38,13 @@ approval finding. These checks intentionally recognize this listed English
 grammar rather than attempting to infer intent from indirect or highly
 contextual prose.
 
+The same clause-local qualification rejects common direct statements that a
+safeguard is `not required`, `not needed`, or `not necessary`. This includes
+approval or confirmation, dry-run or preview, rollback or recovery, audit
+evidence such as logs, and idempotency controls such as retry or retries. A
+plan with one of these explicit negative findings reports `needs-work` even
+when its other findings clear the numeric threshold.
+
 Likewise, a mention is not affirmative evidence when its statement says the
 signal is pending, undecided, unknown, not described, merely considered, or
 only a possibility (for example, `evidence may be recorded`). Direct negative
