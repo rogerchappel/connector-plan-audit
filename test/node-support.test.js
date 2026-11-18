@@ -10,12 +10,15 @@ test("Node.js engine support is documented and covered by CI endpoints", () => {
   const match = manifest.engines?.node?.match(/^>=?(\d+)(?:\.\d+\.\d+)?$/);
   assert.ok(match, "package.json must declare a simple minimum Node.js major version");
   const minimum = Number(match[1]);
-  assert.match(readme, new RegExp(`Node\\.js ${minimum} and the latest even-numbered LTS`));
+  const documented = readme.match(/This package supports Node\.js ([\d, and]+)\./);
+  assert.ok(documented, "README must document the supported Node.js majors");
+  const documentedVersions = [...documented[1].matchAll(/\d+/g)].map(([value]) => Number(value));
 
   const matrix = workflow.match(/node-version:\s*\[([^\]]+)\]/);
   assert.ok(matrix, "CI must declare a Node.js version matrix");
   const versions = [...matrix[1].matchAll(/(?:^|,)\s*(\d+)(?=\s*(?:,|$))/g)].map(([, value]) => Number(value));
   assert.ok(versions.includes(minimum), `CI matrix must include engine minimum ${minimum}`);
+  assert.deepEqual(documentedVersions, versions, "README support policy must match the complete CI matrix");
   assert.ok(versions.includes(Math.max(...versions)), "CI matrix must include its latest supported endpoint");
 
   const latestEvenLts = Math.max(...versions.filter((version) => version % 2 === 0));
