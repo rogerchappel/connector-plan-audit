@@ -7,6 +7,14 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+test("auditText applies JavaScript string coercion to falsy inputs", () => {
+  for (const value of [0, false]) {
+    assert.deepEqual(auditText(value), auditText(String(value)));
+  }
+  assert.deepEqual(auditText(null), auditText(""));
+  assert.deepEqual(auditText(undefined), auditText(""));
+});
+
 test("passing fixture clears the release threshold", () => {
   const text = readFileSync(new URL("../fixtures/connector-plan.md", import.meta.url), "utf8");
   const result = auditText(text);
