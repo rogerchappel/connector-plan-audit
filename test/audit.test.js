@@ -17,6 +17,21 @@ test("thin fixture reports actionable gaps", () => {
   assert.ok(result.findings.some((finding) => !finding.passed));
 });
 
+test("idempotency controls are reported for retry-safe release plans", () => {
+  const result = auditText(`
+    action post a message
+    target channel
+    dry-run preview
+    approval required
+    credentials token boundary
+    rollback correction
+    evidence receipt
+  `);
+
+  assert.equal(result.score, 88);
+  assert.equal(result.findings.find((finding) => finding.id === "idempotency").passed, false);
+});
+
 test("markdown formatter includes score and findings", () => {
   const report = formatMarkdown(auditText("example approval verification input side effect use when"));
   assert.match(report, /Score:/);
