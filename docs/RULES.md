@@ -27,7 +27,9 @@ negates the signal. For action and target checks, supported forms include
 `no recipient`, `without a target`, `recipient is not defined`, and a target or
 recipient described as `unspecified`. The advertised action verbs also fail
 when directly negated: `do not send`, `do not create`, `do not update`, `do not
-delete`, and `do not draft`.
+delete`, and `do not draft`. This direct-negation check is clause-scoped. An
+affirmative action in a separate clause still counts (`Create a draft. Do not
+send it.`), while the same-clause `Do not create a draft.` remains rejected.
 
 Approval and confirmation are treated as the same readiness signal. Direct
 forms such as `approval is not required`, `confirmation is unnecessary`, `no

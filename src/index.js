@@ -155,14 +155,26 @@ function hasTerm(text, terms) {
   return terms.some((term) => termPattern(term).test(text));
 }
 
-function hasUnsupportedMention(normalized, terms) {
-  const clauses = normalized.split(
+function clauses(normalized) {
+  return normalized.split(
     /[.!?;,\n]+|\b(?:although|and|but|however|or|whereas|while)\b/,
   );
-  return clauses.some(
+}
+
+function hasUnsupportedMention(normalized, terms) {
+  return clauses(normalized).some(
     (clause) =>
       hasTerm(clause, terms) &&
       unsupportedSignalPatterns.some((pattern) => pattern.test(clause)),
+  );
+}
+
+function hasAffirmativeAction(normalized, terms) {
+  return clauses(normalized).some(
+    (clause) =>
+      hasTerm(clause, terms) &&
+      !unsafePatterns.action.some((pattern) => pattern.test(clause)) &&
+      !unsupportedSignalPatterns.some((pattern) => pattern.test(clause)),
   );
 }
 
@@ -171,7 +183,9 @@ export function auditText(text, options = {}) {
   const findings = rules.map(([id, message, terms]) => {
     const explicitlyUnsafe = (unsafePatterns[id] || []).some((pattern) => pattern.test(normalized));
     const unsupported = hasUnsupportedMention(normalized, terms);
-    const matched = !explicitlyUnsafe && !unsupported && hasTerm(normalized, terms);
+    const matched = id === "action"
+      ? hasAffirmativeAction(normalized, terms)
+      : !explicitlyUnsafe && !unsupported && hasTerm(normalized, terms);
     return {
       id,
       message,

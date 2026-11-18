@@ -77,6 +77,9 @@ This project reads local markdown and writes only to stdout/stderr. It has no te
   `send/create/update/delete/draft`), an `unspecified` target or recipient,
   optional or otherwise negated approval or confirmation requirements, and
   disabled rollback, undo, correction, or recovery paths do not count.
+  Action negation is clause-scoped, so `Create a draft. Do not send it.` still
+  names `create` as the intended action while retaining the separate safety
+  constraint; `Do not create a draft.` does not name an affirmative action.
   Explicitly negating those unsafe states does count: for example, `approval
   is not optional` and `rollback is not disabled` are affirmative readiness
   evidence. The grammar is intentionally finite and does not infer indirect,
