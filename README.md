@@ -69,10 +69,12 @@ This project reads local markdown and writes only to stdout/stderr. It has no te
   signals do not count as affirmative readiness evidence.
 - Signals described directly as prohibited, forbidden, denied, or missing do
   not count as affirmative readiness evidence.
-- Direct negation of advertised action verbs (`do not send/create/update/delete/draft`),
-  an `unspecified` target or recipient, and negated approval or confirmation
-  requirements do not count. The grammar is intentionally finite and does not
-  infer indirect, contextual, or cross-sentence negation.
+- Direct negation of advertised action verbs (`do not` or `never`
+  `send/create/update/delete/draft`), an `unspecified` target or recipient,
+  optional or otherwise negated approval or confirmation requirements, and
+  disabled rollback, undo, correction, or recovery paths do not count. The
+  grammar is intentionally finite and does not infer indirect, contextual, or
+  cross-sentence negation.
 - It is a release gate and coaching aid, not a guarantee that a workflow is safe.
 - Rules are intentionally conservative and may need project-specific tuning.
 
