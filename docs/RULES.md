@@ -53,5 +53,10 @@ direct English qualifiers only in the clause that contains the readiness term.
 Sentence punctuation, commas, the coordinating conjunctions `and` and `or`, and
 the contrast words `although`, `but`, `however`, `whereas`, and `while` delimit
 clauses. Thus `target is unknown and approval is required` fails `target` while
-preserving `approval`. The checker does not attempt semantic inference across
-clauses, sentences, or more varied grammar.
+preserving `approval`. Qualifiers also stay local when the same signal occurs
+more than once: `rollback is pending for sandbox, but rollback is documented
+for production` passes rollback because its second clause is affirmative.
+Every occurrence is evaluated, and a rule passes when any one of its clauses
+is affirmative; unsafe-only or unsupported-only occurrences do not pass. The
+checker does not attempt semantic inference across clauses, sentences, or more
+varied grammar.

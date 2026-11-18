@@ -436,6 +436,61 @@ test("uncertain plan needs work and identifies unsupported safeguards", () => {
   );
 });
 
+test("affirmative readiness clauses survive same-signal unsafe and unsupported clauses", () => {
+  const cases = [
+    ["approval", "Approval is not required in the sandbox. Approval is required before live writes."],
+    ["rollback", "Rollback is pending for sandbox, but rollback is documented for production."],
+    ["evidence", "Evidence is omitted in the sandbox; evidence is recorded for live execution."],
+    ["idempotency", "Retries are disabled for previews, while retries use dedupe for live execution."],
+  ];
+
+  for (const [id, statement] of cases) {
+    const finding = auditText(statement).findings.find((candidate) => candidate.id === id);
+    assert.equal(finding.passed, true, `${id} should accept: ${statement}`);
+  }
+});
+
+test("same-signal unsafe and unsupported clauses fail without affirmative evidence", () => {
+  const cases = [
+    ["approval", "Approval is not required in the sandbox. Approval is optional for live writes."],
+    ["rollback", "Rollback is pending for sandbox, and rollback is unavailable in production."],
+    ["evidence", "Evidence is omitted in the sandbox; evidence may be recorded later."],
+    ["idempotency", "Retries are disabled for previews, while retry behavior is unknown for live execution."],
+  ];
+
+  for (const [id, statement] of cases) {
+    const finding = auditText(statement).findings.find((candidate) => candidate.id === id);
+    assert.equal(finding.passed, false, `${id} should reject: ${statement}`);
+  }
+});
+
+test("cli accepts affirmative safeguards after same-signal qualified clauses", () => {
+  const directory = mkdtempSync(join(tmpdir(), "connector-plan-audit-"));
+  const plan = join(directory, "same-signal-mixed-clauses.md");
+  writeFileSync(plan, `
+    Action: send the update.
+    Target: the production workspace.
+    Preview is omitted in the sandbox. Preview runs before production execution.
+    Approval is not required in the sandbox. Approval is required before live writes.
+    Credentials are missing from fixtures. Credentials remain within the production runner.
+    Rollback is pending for sandbox, but rollback is documented for production.
+    Evidence is omitted in the sandbox; evidence is recorded for live execution.
+    Retries are disabled for previews, while retries use dedupe for live execution.
+  `);
+
+  try {
+    const result = spawnSync(process.execPath, ["bin/cli.js", plan, "--json"], {
+      encoding: "utf8",
+    });
+    const report = JSON.parse(result.stdout);
+    assert.equal(result.status, 0);
+    assert.equal(report.status, "pass");
+    assert.equal(report.score, 100);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("unsupported qualifiers apply only to their readiness clause", () => {
   const result = auditText(`
     Action: send the update.
