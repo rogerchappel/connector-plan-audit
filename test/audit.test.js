@@ -452,12 +452,67 @@ test("contrast clauses isolate unsupported qualifiers in either order", () => {
   }
 });
 
+test("coordinating conjunctions isolate unsupported qualifiers in either signal order", () => {
+  const cases = [
+    ["target", "The target is unknown and approval is required.", "approval"],
+    ["target", "Approval is required and the target is unknown.", "approval"],
+    ["dry-run", "Preview is pending or rollback uses correction.", "rollback"],
+    ["idempotency", "Evidence is retained or retry behavior is unknown.", "evidence"],
+    ["target", "The target is unknown, and approval is required.", "approval"],
+    ["target", "The target is unknown, but approval is required.", "approval"],
+  ];
+
+  for (const [unsupportedId, statement, affirmativeId] of cases) {
+    const result = auditText(statement);
+    assert.equal(
+      result.findings.find((finding) => finding.id === unsupportedId).passed,
+      false,
+      `${unsupportedId} should reject: ${statement}`,
+    );
+    assert.equal(
+      result.findings.find((finding) => finding.id === affirmativeId).passed,
+      true,
+      `${affirmativeId} should accept: ${statement}`,
+    );
+  }
+});
+
 test("cli preserves affirmative signals beside an unsupported clause", () => {
   const directory = mkdtempSync(join(tmpdir(), "connector-plan-audit-"));
   const plan = join(directory, "mixed-qualifiers.md");
   writeFileSync(plan, `
     Action: send the update.
     Target is unknown, but approval is required before writes.
+    Credentials stay within the token boundary.
+    A preview runs first.
+    Rollback uses correction.
+    Evidence is logged.
+    Retries use dedupe.
+  `);
+
+  try {
+    const result = spawnSync(process.execPath, ["bin/cli.js", plan, "--json"], {
+      encoding: "utf8",
+    });
+    const report = JSON.parse(result.stdout);
+    assert.equal(result.status, 0);
+    assert.equal(report.status, "pass");
+    assert.equal(report.score, 88);
+    assert.deepEqual(
+      report.findings.filter((finding) => !finding.passed).map((finding) => finding.id),
+      ["target"],
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("cli scopes unsupported qualifiers across coordinating conjunctions", () => {
+  const directory = mkdtempSync(join(tmpdir(), "connector-plan-audit-"));
+  const plan = join(directory, "coordinated-qualifiers.md");
+  writeFileSync(plan, `
+    Action: send the update.
+    The target is unknown and approval is required before writes.
     Credentials stay within the token boundary.
     A preview runs first.
     Rollback uses correction.
