@@ -49,6 +49,53 @@ test("explicitly unsafe safeguards do not pass on keyword mentions", () => {
   }
 });
 
+test("explicitly absent actions and targets do not pass on keyword mentions", () => {
+  const cases = [
+    ["action", "No action is defined."],
+    ["action", "There is no intended action."],
+    ["action", "The action is not specified."],
+    ["action", "Without an action, this plan cannot proceed."],
+    ["target", "No target is defined."],
+    ["target", "There is no target or recipient."],
+    ["target", "The recipient is not specified."],
+    ["target", "Without a target account, this plan cannot proceed."],
+  ];
+
+  for (const [id, statement] of cases) {
+    const finding = auditText(statement).findings.find((candidate) => candidate.id === id);
+    assert.equal(finding.passed, false, `${id} should reject: ${statement}`);
+  }
+});
+
+test("affirmative action and target language still passes", () => {
+  const cases = [
+    ["action", "Action: create a draft message."],
+    ["action", "Send a status update."],
+    ["target", "Target: the release workspace."],
+    ["target", "Recipient: the incident channel."],
+  ];
+
+  for (const [id, statement] of cases) {
+    const finding = auditText(statement).findings.find((candidate) => candidate.id === id);
+    assert.equal(finding.passed, true, `${id} should accept: ${statement}`);
+  }
+});
+
+test("negated action and target mentions cannot clear the default threshold", () => {
+  const result = auditText(`
+    No action is defined.
+    There is no target or recipient.
+    dry-run approval credential rollback evidence idempotency
+  `);
+
+  assert.equal(result.status, "needs-work");
+  assert.equal(result.score, 75);
+  assert.deepEqual(
+    result.findings.filter((finding) => !finding.passed).map((finding) => finding.id),
+    ["action", "target"],
+  );
+});
+
 test("combined unsafe plan needs work and identifies failed safeguards", () => {
   const result = auditText(`
     Action: send funds.
