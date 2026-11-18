@@ -54,6 +54,8 @@ This project reads local markdown and writes only to stdout/stderr. It has no te
 ## Limitations
 
 - V1 uses deterministic term checks rather than semantic LLM review.
+- Pending, undecided, unknown, undescribed, considered, and merely possible
+  signals do not count as affirmative readiness evidence.
 - It is a release gate and coaching aid, not a guarantee that a workflow is safe.
 - Rules are intentionally conservative and may need project-specific tuning.
 
