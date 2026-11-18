@@ -156,11 +156,13 @@ function hasTerm(text, terms) {
 }
 
 function hasUnsupportedMention(normalized, terms) {
-  const statements = normalized.split(/[.!?;\n]+/);
-  return statements.some(
-    (statement) =>
-      hasTerm(statement, terms) &&
-      unsupportedSignalPatterns.some((pattern) => pattern.test(statement)),
+  const clauses = normalized.split(
+    /[.!?;,\n]+|\b(?:although|but|however|whereas|while)\b/,
+  );
+  return clauses.some(
+    (clause) =>
+      hasTerm(clause, terms) &&
+      unsupportedSignalPatterns.some((pattern) => pattern.test(clause)),
   );
 }
 

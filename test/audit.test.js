@@ -410,6 +410,78 @@ test("uncertain plan needs work and identifies unsupported safeguards", () => {
   );
 });
 
+test("unsupported qualifiers apply only to their readiness clause", () => {
+  const result = auditText(`
+    Action: send the update.
+    Target is unknown, but approval is required before writes.
+    Credentials stay within the token boundary.
+    A preview runs first.
+    Rollback uses correction.
+    Evidence is logged.
+    Retries use dedupe.
+  `);
+
+  assert.equal(result.status, "pass");
+  assert.equal(result.score, 88);
+  assert.deepEqual(
+    result.findings.filter((finding) => !finding.passed).map((finding) => finding.id),
+    ["target"],
+  );
+});
+
+test("contrast clauses isolate unsupported qualifiers in either order", () => {
+  const cases = [
+    ["target", "Target is unknown but approval is required before writes.", "approval"],
+    ["target", "Approval is required before writes, while target is unknown.", "approval"],
+    ["dry-run", "Preview is pending, whereas rollback uses correction.", "rollback"],
+    ["idempotency", "Evidence is retained, although retry behavior is unknown.", "evidence"],
+  ];
+
+  for (const [unsupportedId, statement, affirmativeId] of cases) {
+    const result = auditText(statement);
+    assert.equal(
+      result.findings.find((finding) => finding.id === unsupportedId).passed,
+      false,
+      `${unsupportedId} should reject: ${statement}`,
+    );
+    assert.equal(
+      result.findings.find((finding) => finding.id === affirmativeId).passed,
+      true,
+      `${affirmativeId} should accept: ${statement}`,
+    );
+  }
+});
+
+test("cli preserves affirmative signals beside an unsupported clause", () => {
+  const directory = mkdtempSync(join(tmpdir(), "connector-plan-audit-"));
+  const plan = join(directory, "mixed-qualifiers.md");
+  writeFileSync(plan, `
+    Action: send the update.
+    Target is unknown, but approval is required before writes.
+    Credentials stay within the token boundary.
+    A preview runs first.
+    Rollback uses correction.
+    Evidence is logged.
+    Retries use dedupe.
+  `);
+
+  try {
+    const result = spawnSync(process.execPath, ["bin/cli.js", plan, "--json"], {
+      encoding: "utf8",
+    });
+    const report = JSON.parse(result.stdout);
+    assert.equal(result.status, 0);
+    assert.equal(report.status, "pass");
+    assert.equal(report.score, 88);
+    assert.deepEqual(
+      report.findings.filter((finding) => !finding.passed).map((finding) => finding.id),
+      ["target"],
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("markdown formatter includes score and findings", () => {
   const report = formatMarkdown(auditText("example approval verification input side effect use when"));
   assert.match(report, /Score:/);

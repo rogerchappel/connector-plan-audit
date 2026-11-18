@@ -47,5 +47,9 @@ never be recorded`, and a signal described as disabled (for example, `retries
 are disabled`). Affirmative counterparts such as `preview is performed`,
 `rollback can be performed`, and `evidence will be recorded` remain readiness
 evidence. This deterministic boundary is statement-local: it recognizes these
-direct English qualifiers but does not attempt semantic inference across
-sentences or more varied grammar.
+direct English qualifiers only in the clause that contains the readiness term.
+Sentence punctuation, commas, and the contrast words `although`, `but`,
+`however`, `whereas`, and `while` delimit clauses. Thus `target is unknown, but
+approval is required` fails `target` while preserving `approval`. The checker
+does not attempt semantic inference across clauses, sentences, or more varied
+grammar.
