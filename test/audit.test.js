@@ -215,6 +215,34 @@ test("direct negative readiness forms fail without rejecting affirmative counter
   }
 });
 
+test("negated unsafe safeguard states count as affirmative readiness evidence", () => {
+  const cases = [
+    ["approval", "Approval is not optional."],
+    ["approval", "Confirmation is not optional before the write."],
+    ["rollback", "Rollback is not disabled."],
+    ["rollback", "Recovery is not disabled after a failed write."],
+  ];
+
+  for (const [id, statement] of cases) {
+    const finding = auditText(statement).findings.find((candidate) => candidate.id === id);
+    assert.equal(finding.passed, true, `${id} should accept: ${statement}`);
+  }
+});
+
+test("unsafe safeguard states remain rejected when they are not negated", () => {
+  const cases = [
+    ["approval", "Approval is optional."],
+    ["approval", "Confirmation is optional before the write."],
+    ["rollback", "Rollback is disabled."],
+    ["rollback", "Recovery is disabled after a failed write."],
+  ];
+
+  for (const [id, statement] of cases) {
+    const finding = auditText(statement).findings.find((candidate) => candidate.id === id);
+    assert.equal(finding.passed, false, `${id} should reject: ${statement}`);
+  }
+});
+
 test("prohibited, denied, and missing readiness signals do not count", () => {
   const cases = [
     ["action", "Action is prohibited.", "Action: create a draft message."],
