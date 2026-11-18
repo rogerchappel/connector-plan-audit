@@ -87,10 +87,37 @@ export const rules = [
   ]
 ];
 
+const unsafePatterns = {
+  "dry-run": [
+    /\b(?:no|without)\s+(?:a\s+)?(?:dry[- ]run|preview|simulation)\b/,
+    /\b(?:dry[- ]run|preview|simulation)\b[^.!?\n]{0,40}\b(?:disabled|omitted|skipped|not\s+(?:required|available|performed))\b/,
+  ],
+  approval: [
+    /\bapproval\b[^.!?\n]{0,40}\b(?:not\s+required|unnecessary|waived|bypassed|skipped)\b/,
+    /\b(?:without|no)\s+(?:explicit\s+)?approval\b/,
+  ],
+  credentials: [
+    /\b(?:credentials?|tokens?|secrets?|auth)\b[^.!?\n]{0,80}\b(?:logged?|recorded?|exposed?|published?|shared?)\b[^.!?\n]{0,40}\b(?:publicly|in\s+public|plain\s*text)\b/,
+  ],
+  rollback: [
+    /\b(?:rollback|undo|correction|recovery)\b[^.!?\n]{0,40}\b(?:impossible|unavailable|unsupported|not\s+(?:possible|available|supported))\b/,
+    /\b(?:no|without)\s+(?:a\s+)?(?:rollback|undo|correction|recovery)\b/,
+  ],
+  evidence: [
+    /\b(?:no|without)\s+(?:audit\s+)?(?:evidence|receipt|log|record)\b/,
+    /\b(?:evidence|receipts?|logs?|records?)\b[^.!?\n]{0,40}\b(?:not\s+(?:recorded|retained|kept)|discarded|omitted)\b/,
+  ],
+  idempotency: [
+    /\b(?:no|without)\s+(?:an?\s+)?(?:idempotency|idempotent|dedupe|duplicate[- ]send)\b/,
+    /\b(?:idempotency|dedupe|duplicate[- ]send)\b[^.!?\n]{0,40}\b(?:not\s+(?:supported|implemented|required)|absent|disabled|unavailable)\b/,
+  ],
+};
+
 export function auditText(text, options = {}) {
   const normalized = String(text || "").toLowerCase();
   const findings = rules.map(([id, message, terms]) => {
-    const matched = terms.some((term) => normalized.includes(term));
+    const explicitlyUnsafe = (unsafePatterns[id] || []).some((pattern) => pattern.test(normalized));
+    const matched = !explicitlyUnsafe && terms.some((term) => normalized.includes(term));
     return {
       id,
       message,
