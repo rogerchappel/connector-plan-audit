@@ -194,6 +194,27 @@ test("affirmative action, target, and approval synonyms remain supported", () =>
   }
 });
 
+test("direct negative readiness forms fail without rejecting affirmative counterparts", () => {
+  const cases = [
+    ["action", "Never send the message.", "Send the message after approval."],
+    ["action", "Never create the record.", "Create the record after approval."],
+    ["action", "Never update the account.", "Update the account after approval."],
+    ["action", "Never delete the draft.", "Delete the draft after approval."],
+    ["action", "Never draft a reply.", "Draft a reply after approval."],
+    ["approval", "Approval is optional.", "Approval is required."],
+    ["approval", "Confirmation is optional.", "Confirmation is required."],
+    ["rollback", "Rollback is disabled.", "Rollback is enabled."],
+    ["rollback", "Recovery is disabled.", "Recovery is enabled."],
+  ];
+
+  for (const [id, negative, affirmative] of cases) {
+    const negativeFinding = auditText(negative).findings.find((finding) => finding.id === id);
+    const affirmativeFinding = auditText(affirmative).findings.find((finding) => finding.id === id);
+    assert.equal(negativeFinding.passed, false, `${id} should reject: ${negative}`);
+    assert.equal(affirmativeFinding.passed, true, `${id} should accept: ${affirmative}`);
+  }
+});
+
 test("prohibited, denied, and missing readiness signals do not count", () => {
   const cases = [
     ["action", "Action is prohibited.", "Action: create a draft message."],
