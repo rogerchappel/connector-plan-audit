@@ -102,6 +102,7 @@ const unsafePatterns = {
     /\b(?:no|without)\s+(?:an?\s+)?(?:intended\s+)?action\b/,
     /\baction\b[^.!?\n]{0,40}\bnot\s+(?:defined|specified|identified|provided|named)\b/,
     /\bdo\s+not\s+(?:send|create|update|delete|draft)\b/,
+    /\bnever\s+(?:send|create|update|delete|draft)\b/,
   ],
   target: [
     /\b(?:no|without)\s+(?:an?\s+)?(?:intended\s+)?(?:target|recipient)\b/,
@@ -112,7 +113,7 @@ const unsafePatterns = {
     /\b(?:dry[- ]run|preview|simulation)\b[^.!?\n]{0,40}\b(?:disabled|omitted|skipped|not\s+(?:required|available|performed))\b/,
   ],
   approval: [
-    /\b(?:approval|confirmation)\b[^.!?\n]{0,40}\b(?:not\s+(?:required|needed)|unnecessary|waived|bypassed|skipped)\b/,
+    /\b(?:approval|confirmation)\b[^.!?\n]{0,40}\b(?:not\s+(?:required|needed)|unnecessary|optional|waived|bypassed|skipped)\b/,
     /\b(?:without|no)\s+(?:explicit\s+)?(?:approval|confirmation)\b/,
     /\bdo\s+not\s+(?:approve|confirm|ask\s+before)\b/,
   ],
@@ -120,7 +121,7 @@ const unsafePatterns = {
     /\b(?:credentials?|tokens?|secrets?|auth)\b[^.!?\n]{0,80}\b(?:logged?|recorded?|exposed?|published?|shared?)\b[^.!?\n]{0,40}\b(?:publicly|in\s+public|plain\s*text)\b/,
   ],
   rollback: [
-    /\b(?:rollback|undo|correction|recovery)\b[^.!?\n]{0,40}\b(?:impossible|unavailable|unsupported|not\s+(?:possible|available|supported))\b/,
+    /\b(?:rollback|undo|correction|recovery)\b[^.!?\n]{0,40}\b(?:disabled|impossible|unavailable|unsupported|not\s+(?:possible|available|supported))\b/,
     /\b(?:no|without)\s+(?:a\s+)?(?:rollback|undo|correction|recovery)\b/,
   ],
   evidence: [
