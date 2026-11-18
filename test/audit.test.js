@@ -90,6 +90,32 @@ test("affirmative safeguard language still passes", () => {
   }
 });
 
+test("readiness terms match words and phrases rather than incidental substrings", () => {
+  const result = auditText(`
+    The author prepares the plan.
+    The catalog entry is retained.
+  `);
+
+  assert.equal(result.findings.find((finding) => finding.id === "credentials").passed, false);
+  assert.equal(result.findings.find((finding) => finding.id === "evidence").passed, false);
+});
+
+test("documented inflected readiness terms still pass", () => {
+  const cases = [
+    ["dry-run", "A simulation runs before execution."],
+    ["approval", "Confirmation is required before writes."],
+    ["credentials", "Credentials and tokens remain in the runner."],
+    ["rollback", "The recovery procedure restores the prior state."],
+    ["evidence", "Receipts and logs are retained."],
+    ["idempotency", "Retries use a dedupe key."],
+  ];
+
+  for (const [id, statement] of cases) {
+    const finding = auditText(statement).findings.find((candidate) => candidate.id === id);
+    assert.equal(finding.passed, true, `${id} should accept: ${statement}`);
+  }
+});
+
 test("explicitly absent actions and targets do not pass on keyword mentions", () => {
   const cases = [
     ["action", "No action is defined."],
@@ -234,4 +260,21 @@ test("markdown formatter includes score and findings", () => {
 test("cli prints package version", () => {
   const output = execFileSync(process.execPath, ["bin/cli.js", "--version"], { encoding: "utf8" });
   assert.match(output, /^0\.1\.0\n$/);
+});
+
+test("cli rejects unknown flags, extra files, and malformed option combinations", () => {
+  const cases = [
+    ["fixtures/connector-plan.md", "--bogus"],
+    ["fixtures/connector-plan.md", "fixtures/thin.md"],
+    ["--json"],
+    ["--help", "fixtures/connector-plan.md"],
+    ["--version", "--json"],
+    ["fixtures/connector-plan.md", "--json", "--json"],
+  ];
+
+  for (const args of cases) {
+    const result = spawnSync(process.execPath, ["bin/cli.js", ...args], { encoding: "utf8" });
+    assert.equal(result.status, 1, `should reject: ${args.join(" ")}`);
+    assert.match(result.stderr, /Usage: connector-plan-audit/);
+  }
 });
