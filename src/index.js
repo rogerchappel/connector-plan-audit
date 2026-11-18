@@ -31,7 +31,8 @@ export const rules = [
       "dry run",
       "dry-run",
       "preview",
-      "simulate"
+      "simulate",
+      "simulation"
     ]
   ],
   [
@@ -41,6 +42,7 @@ export const rules = [
       "approval",
       "approve",
       "confirm",
+      "confirmation",
       "ask before"
     ]
   ],
@@ -49,8 +51,11 @@ export const rules = [
     "Describe credential handling boundaries",
     [
       "credential",
+      "credentials",
       "token",
+      "tokens",
       "secret",
+      "secrets",
       "auth"
     ]
   ],
@@ -61,7 +66,8 @@ export const rules = [
       "rollback",
       "undo",
       "correction",
-      "recover"
+      "recover",
+      "recovery"
     ]
   ],
   [
@@ -70,8 +76,11 @@ export const rules = [
     [
       "evidence",
       "receipt",
+      "receipts",
       "log",
-      "record"
+      "logs",
+      "record",
+      "records"
     ]
   ],
   [
@@ -82,7 +91,8 @@ export const rules = [
       "idempotent",
       "duplicate",
       "dedupe",
-      "retry"
+      "retry",
+      "retries"
     ]
   ]
 ];
@@ -130,11 +140,20 @@ const unsupportedSignalPatterns = [
   /\bpossibly\s+(?:planned|recorded|implemented|added|available|supported)\b/,
 ];
 
+function termPattern(term) {
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(?<![a-z0-9_])${escaped}(?![a-z0-9_])`);
+}
+
+function hasTerm(text, terms) {
+  return terms.some((term) => termPattern(term).test(text));
+}
+
 function hasUnsupportedMention(normalized, terms) {
   const statements = normalized.split(/[.!?;\n]+/);
   return statements.some(
     (statement) =>
-      terms.some((term) => statement.includes(term)) &&
+      hasTerm(statement, terms) &&
       unsupportedSignalPatterns.some((pattern) => pattern.test(statement)),
   );
 }
@@ -144,7 +163,7 @@ export function auditText(text, options = {}) {
   const findings = rules.map(([id, message, terms]) => {
     const explicitlyUnsafe = (unsafePatterns[id] || []).some((pattern) => pattern.test(normalized));
     const unsupported = hasUnsupportedMention(normalized, terms);
-    const matched = !explicitlyUnsafe && !unsupported && terms.some((term) => normalized.includes(term));
+    const matched = !explicitlyUnsafe && !unsupported && hasTerm(normalized, terms);
     return {
       id,
       message,
